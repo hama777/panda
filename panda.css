@@ -1,0 +1,72 @@
+/*  コメント */
+table, td, th { 
+    font-family: "Meiryo UI" ; 
+    font-size: 14px; 
+    border: 1px #FFD700 solid;  
+    border-collapse: collapse; 
+    padding: 3px; 
+    
+    margin: auto;
+}
+h1{
+    text-align: center;
+    margin: 0 0 0.5em;
+    padding: 3px;
+    font-size: 20px ;
+    font-weight: bold;
+}
+h2{
+    margin: 0 0 0.5em;
+    padding: 3px;
+    border-top: 3px double #1e90ff;
+    border-bottom: 3px double #1e90ff;
+    font-size: 16px ;
+    font-weight: bold;
+}
+a { 
+    text-decoration: none; 
+    color: inherit;
+}
+th { 
+    background-color :#fbf703;
+}
+tr { 
+    background-color : #ffffff;
+}
+tr:nth-child(2n+1) { 
+    background-color : #f9f9e2;
+}
+tr:hover  { 
+    background-color : #f4ffc9;
+}
+td.red  { 
+    color : #ff0000 ; 
+    font-weight : bold ;
+}
+td.right{ 
+    text-align: right;
+}
+.flex {
+    display: flex;
+}
+span.red {
+    color : red;
+    font-weight: bold; 
+}
+span.red2 {
+    color : red;
+}
+span.green {
+    color : green;
+    font-weight: bold; 
+}
+span.green2 {
+    color : green;
+}
+span.blue {
+    color : blue;
+    font-weight: bold; 
+}
+span.blue2 {
+    color : blue;
+}
