@@ -15,7 +15,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome import service as fs
 from datetime import timedelta
 
-version = "1.18"     # 23/09/09
+version = "1.19"     # 24/01/17
 appdir = os.path.dirname(os.path.abspath(__file__))
 userfile = appdir + "./user.txt"
 conffile = appdir + "./panda.conf"
@@ -350,7 +350,7 @@ def output_resv_list() :
                 estimeatestr = f'<span class=green>{estimeatestr}</span>'
             elif estimeate < today_date + timedelta(days=14) :  # 2週間以内なら青字にする
                 estimeatestr = f'<span class=blue>{estimeatestr}</span>'
-            elif estimeate > today_date + timedelta(days=330) :  # 1年以上先ならアンダーライン
+            elif estimeate > today_date + timedelta(days=365) :  # 1年以上先ならアンダーライン
                 estimeatestr = f'<u>{estimeatestr}</u>'
         else :
             dd = 0 
