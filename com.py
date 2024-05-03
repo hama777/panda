@@ -9,7 +9,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome import service as fs
 from datetime import timedelta
 
-#  1.04  23/04/14
+#  23/05/03
 
 SEARCH_NON  = 0    # 見つからない   
 SEARCH_NG  = 1     # 貸出中
@@ -69,6 +69,11 @@ def read_config(conffile) :
     config['selenium'] = conf.readline().strip()
     config['dbfile'] = conf.readline().strip()
     config['linetoken'] = conf.readline().strip()
+    config['ftp_host'] = conf.readline().strip()
+    config['ftp_user'] = conf.readline().strip()
+    config['ftp_pass'] = conf.readline().strip()
+    config['ftp_url'] = conf.readline().strip()
+
     conf.close()
     return config
 
