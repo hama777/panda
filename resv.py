@@ -14,8 +14,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome import service as fs
 from datetime import timedelta
+from ftplib import FTP_TLS
 
-version = "1.19"     # 24/01/17
+version = "1.20"     # 24/05/03
 appdir = os.path.dirname(os.path.abspath(__file__))
 userfile = appdir + "./user.txt"
 conffile = appdir + "./panda.conf"
@@ -65,8 +66,8 @@ SEARCH_OK  = 2     # 貸出可
 SEARCH_DUP  = 3    # 複数ヒット
 
 def main_proc():
-    global today_date,browser,selenium,userinfo,start_time,driver
-    #locale.setlocale(locale.LC_TIME, 'ja_JP.UTF-8')
+    global today_date,browser,selenium,userinfo,start_time,driver,config
+
     start_time  = time.time()
     locale.setlocale(locale.LC_TIME, '')
     today_date = datetime.date.today()
@@ -130,7 +131,7 @@ def proc_reserve_list():
     estimate_log.write("</table>")
     estimate_log.close()
     output_info_file()          #  今回の情報を保存
-
+    ftp_upload()
 
 def access_reserve() :
     topurl ="https://www.lib.city.kobe.jp/winj/opac/reserve-list.do"
@@ -174,7 +175,6 @@ def analize_reserve(html) :
         status = status.replace(' ','').replace('\xa0',' ')
         m = re.search(re_status1, status)
         if m :
-            #status = m.group(1)
             status = STATUS_NG
             order = m.group(2)
             limit = ""
@@ -286,7 +286,6 @@ def get_info_from_data() :
                 book_info['index'] = '0'
             user_book_info_list.append(book_info)
         user = user + 1 
-        #print(f'user_book_info_list = {user_book_info_list}\n')
         book_info_list.append(user_book_info_list)
 
 #  最新履歴ファイルを読み hist_list に格納する
@@ -458,6 +457,12 @@ def today(s) :
     d = datetime.datetime.now().strftime("%m/%d %H:%M")
     s = s.replace("%today%",d)
     out.write(s)    
+
+def ftp_upload() : 
+    if debug == 1 :
+        return 
+    with FTP_TLS(host=config['ftp_host'], user=config['ftp_user'], passwd=config['ftp_pass']) as ftp:
+        ftp.storbinary('STOR {}'.format(config['ftp_url']), open(resv_resultfile, 'rb'))
 
 def parse_template(templ_name,result_name) :
     global out 
