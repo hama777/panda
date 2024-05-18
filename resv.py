@@ -16,7 +16,7 @@ from selenium.webdriver.chrome import service as fs
 from datetime import timedelta
 from ftplib import FTP_TLS
 
-version = "1.20"     # 24/05/03
+version = "1.21"     # 24/05/19
 appdir = os.path.dirname(os.path.abspath(__file__))
 userfile = appdir + "./user.txt"
 conffile = appdir + "./panda.conf"
@@ -487,6 +487,11 @@ def parse_template(templ_name,result_name) :
             ela = time.time() - start_time
             ela = f'{ela:.2f}'
             s = line.replace("%elapsetime%",ela)
+            out.write(s)
+            continue
+        if "%resv_title%" in line:
+            d = datetime.datetime.now().strftime("%y/%m/%d")
+            s = line.replace("%resv_title%",f"予約リスト{d}")
             out.write(s)
             continue
 
