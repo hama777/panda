@@ -16,7 +16,7 @@ from selenium.webdriver.chrome import service as fs
 from datetime import timedelta
 from ftplib import FTP_TLS
 
-version = "1.21"     # 24/05/19
+version = "1.22"     # 24/05/27
 appdir = os.path.dirname(os.path.abspath(__file__))
 userfile = appdir + "./user.txt"
 conffile = appdir + "./panda.conf"
@@ -59,6 +59,7 @@ STATUS_DELI = 1   # 配送中
 STATUS_NG = 2     # 返却待ち
 STATUS_ORDER = 3  # 発注中
 STATUS_REQ = 4    # 予約申込
+STATUS_OTHER = 5  # 対応中
 
 SEARCH_NON  = 0    # 見つからない   
 SEARCH_NG  = 1     # 貸出中
@@ -197,6 +198,8 @@ def analize_reserve(html) :
                     status = STATUS_ORDER
                 elif m.group(1) == "予約申込" :
                     status = STATUS_ORDER
+                elif m.group(1) == "対応中" :
+                    status = STATUS_OTHER
                 else :
                     status = STATUS_DELI
                 limit = ""
@@ -332,6 +335,8 @@ def output_resv_list() :
             status = "<span class=green>配送中</span>"
         if r['status'] == STATUS_ORDER :
             status = "発注中"
+        if r['status'] == STATUS_OTHER :
+            status = "対応中"
         if r['status'] == STATUS_NG :
             status = "貸出中"
         if r['status'] == STATUS_REQ :
