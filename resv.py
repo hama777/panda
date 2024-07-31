@@ -16,7 +16,7 @@ from selenium.webdriver.chrome import service as fs
 from datetime import timedelta
 from ftplib import FTP_TLS
 
-version = "1.22"     # 24/05/27
+version = "1.23"     # 24/07/31
 appdir = os.path.dirname(os.path.abspath(__file__))
 userfile = appdir + "./user.txt"
 conffile = appdir + "./panda.conf"
@@ -28,6 +28,7 @@ estimatefile = appdir + "./esti.htm"
 
 infofile = appdir + "./info"
 histfile = appdir + "./hist"
+prediction = appdir + "./prediction.txt"    # 貸出予測日
 
 debug = 0
 browser = ""
@@ -104,7 +105,7 @@ def argument() :
 #    予約リスト
 #################################################
 def proc_reserve_list():
-    global resv_list,user_resv_list,book_info_list,user_book_info_list,estimate_log
+    global resv_list,user_resv_list,book_info_list,user_book_info_list,estimate_log,predict
     if flg_display :
         result = subprocess.run((browser, resv_resultfile))
         return
@@ -112,6 +113,8 @@ def proc_reserve_list():
     estimate_log.write("<table>")
     estimate_log.write("<tr><th>書名</th><th>順位</th><th>基準日付</th><th>基準順位</th>")
     estimate_log.write("<th>予測日</th><th>日/順位</th><th>日数</th><th>差分順位</th></tr>")
+
+    predict  = open(prediction,"w",encoding='utf-8')
 
     for u in userinfo :
         com.login(u['id'],u['pass'],driver)
@@ -131,6 +134,7 @@ def proc_reserve_list():
     result = subprocess.run((browser, resv_resultfile))
     estimate_log.write("</table>")
     estimate_log.close()
+    predict.close()
     output_info_file()          #  今回の情報を保存
     ftp_upload()
 
@@ -370,6 +374,7 @@ def output_resv_list() :
                   f"<td align=right>{od}({prev_order})</td><td>{estimeatestr}</td>"
                   f"<td align=right>{dd:.2f}</td><td>{l_date}</td></tr>\n")
 
+        predict.write(f'{title}\t{estimeate}\n')
     num_output = num_output + 1
 
 #  タイトルで検索し過去の 所蔵冊数、予約数、順位、書誌番号 を取得する  引数ｔ はタイトル
