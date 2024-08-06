@@ -1,17 +1,19 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from ast import If
+#from ast import If
 import os
-import csv
+#import csv
 import datetime
 import pandas as pd
 import locale
 from ftplib import FTP_TLS
 from datetime import date,timedelta
-import math
+#import math
+import subprocess
+import com
 
-version = "0.01"       # 24/08/02
+version = "0.03"       # 24/08/06
 
 # TODO:  
 
@@ -21,16 +23,22 @@ appdir = os.path.dirname(os.path.abspath(__file__))
 datafile = appdir + "/prediction.txt"
 templatefile = appdir + "/predict_templ.htm"
 resultfile = appdir + "/predict.htm"
+conffile = appdir + "./panda.conf"
 df_predict = ""
 ftp_host = ftp_user = ftp_pass = ftp_url =  ""
 pixela_url = ""
 pixela_token = ""
 
 def main_proc():
+    global browser
 
     locale.setlocale(locale.LC_TIME, '')
+    config = com.read_config(conffile)
+    browser = config['browser']
+
     read_data() 
     parse_template()
+    _  = subprocess.run((browser, resultfile))
 
 def read_data():
     global df_predict
@@ -44,7 +52,7 @@ def predict_timeline() :
     t_mm = d_today.month -1 
     t_dd = d_today.day
     limit_date = d_today + datetime.timedelta(days=60)
-    for index , row in df_predict.iterrows() :    
+    for _ , row in df_predict.iterrows() :    
         title = row['title']
         predict = row['predict']   # str type
         pdate = datetime.datetime.strptime(predict, "%Y-%m-%d")
