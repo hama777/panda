@@ -1,5 +1,7 @@
+Imports System.Runtime.Intrinsics
+
 Public Class Form1
-    Public Const VERSION As String = "1.03"
+    Public Const VERSION As String = "1.04"
     Public Const BOROWSER As String = "C:\Program Files\Google\Chrome\Application\chrome.exe"
     Public Const python_exe As String = "D:\AP\python\python.exe"
     '    Public Const homedir As String = "D:\work\tools\panda\"
@@ -129,6 +131,14 @@ Public Class Form1
         Else
             opt_h = False
         End If
+
+    End Sub
+
+    Private Sub cmd_predi_Click(sender As Object, e As EventArgs) Handles cmd_predi.Click
+        Dim arg As String
+
+        arg = homedir & "predict.py"
+        cmd_run(arg)
 
     End Sub
 End Class
