@@ -12,7 +12,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome import service as fs
 from selenium.webdriver.support.select import Select
 
-version = "1.05"    # 23/07/20
+version = "1.06"    # 24/08/24
 appdir = os.path.dirname(os.path.abspath(__file__))
 conffile = appdir + "./panda.conf"
 wishlistfile = appdir + "./wishlist.htm"
@@ -164,14 +164,15 @@ def check_resv_title_list(title) :
     return False 
 
 def search_by_title_repetition(t) :
-    for _ in range(2)  :    # エラー時のリトライは2回
+    for _ in range(4)  :    # エラー時のリトライは2回
         ret = com.search_by_title(t,driver)
         if ret[0] != -1 :   # st 
             return ret  
         time.sleep(30)     # エラーなら30秒まってリトライ
     else :
         print(f"ERROR search access {t}")
-        sys.exit(1)
+        return -1,0,0,0
+        #sys.exit(1)
 
 def status_massage(st) :
     global state_count
