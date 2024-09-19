@@ -12,11 +12,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome import service as fs
 from selenium.webdriver.support.select import Select
 
-version = "1.10"    # 23/05/03
+version = "1.11"    # 24/09/19
 appdir = os.path.dirname(os.path.abspath(__file__))
 conffile = appdir + "./panda.conf"
 templ_name = appdir + "./searchtmpl.htm"
 result_file = appdir + "./searchres.htm"
+log_file = appdir + "./searchlog.txt"
 result_list = []
 
 SEARCH_NON  = 0    # 見つからない   
@@ -76,14 +77,16 @@ def check_exsist() :
     sql = "SELECT * FROM [main] WHERE [図] is null"
     conn_str = conn_temp.replace("xxxxxx",dbfile)
     dbdata = com.read_database(conn_str,sql)
-    #out = open("report.txt",'w',  encoding='utf-8')
+    log = open(log_file,'w' ,  encoding='utf-8')
     for row in dbdata :
         t = row.split("\t")[0]
         ret = com.search_by_title(t,driver)
         st = ret[0]
         if st == -1 :
             print("ERROR search access")
-            sys.exit(1)
+            log.write(f'ERROR search access {t}\n')
+            continue
+            #sys.exit(1)
         count = ret[1]
         resv = ret[2]
         if st == SEARCH_NON :     # 存在しなければ何もしない
@@ -98,15 +101,7 @@ def check_exsist() :
             state_count[SEARCH_OK] +=  1   # 貸出中か貸出OKかは区別しない
 
         result_list.append(result_item)
-        # if st == SEARCH_DUP :
-        #     msg = "重複"
-        # if st == SEARCH_MANY :
-        #     msg = "多数"
-        # if st == SEARCH_NG or st == SEARCH_OK :
-        #     msg = f"★所蔵★ 冊数 {count}  予約数 {resv}"
-        #out.write(f'{msg} {t}\n')
-    #out.close()
-    print(result_list)
+    log.close()
 
 def output_result() :
     i = 0 
