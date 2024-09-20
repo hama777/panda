@@ -12,12 +12,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome import service as fs
 from selenium.webdriver.support.select import Select
 
-version = "1.06"    # 24/08/24
+version = "1.07"    # 24/09/20
 appdir = os.path.dirname(os.path.abspath(__file__))
 conffile = appdir + "./panda.conf"
 wishlistfile = appdir + "./wishlist.htm"
 wish_templatefile = appdir + "./wishtmpl.htm"
 cachefile = appdir + "./cache.txt"     # 過去の検索した情報ファイル
+cachefile_save = appdir + "./cachesv.txt"     # cachefile バックアップ
 resv_title_list = []     #  予約中のタイトルリスト  wishlist で予約中のものは色を変えるため
 infofile = appdir + "./info"
 
@@ -88,6 +89,9 @@ def wish_list():
 def output_wish_list() :
     biburl = "https://www.lib.city.kobe.jp/winj/opac/switch-detail.do?lang=ja&bibid="
     i = 0 
+    if os.path.exists(cachefile_save) :
+        os.remove(cachefile_save)  
+    os.rename(cachefile, cachefile_save) 
     bibout = open(cachefile,'w',  encoding='utf-8')
     for row in dbdata :
         i = i + 1 
