@@ -13,7 +13,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome import service as fs
 from datetime import timedelta
 
-version = "1.01"     # 23/07/13
+# 25/03/14 v1.02 貸出延長可否を貸出延長ボタンで判断する
+version = "1.02"
 appdir = os.path.dirname(os.path.abspath(__file__))
 userfile = appdir + "./user.txt"
 conffile = appdir + "./panda.conf"
@@ -28,14 +29,9 @@ debug = 0
 browser = ""
 selenium = ""
 driver = ""
-#user_resv_list = []   # ユーザごとの予約リスト
-#resv_list = []        # 全ユーザの予約リスト
 user_rental_list = [] # ユーザごとの貸出リスト
 rental_list = []      # 全ユーザの貸出リスト
 userinfo = []         # ID pass
-#user_book_info_list = []        # 本の情報 所蔵冊数、予約件数
-#book_info_list = []        # 本の情報 所蔵冊数、予約件数
-#save_date = ""       # 本の情報を保存した日付
 hist_list = []        # 全ユーザの履歴情報
 
 out = ""
@@ -103,6 +99,7 @@ def analize_rental(html) :
 
     attr_list = []
     info_list = []
+    extension_list = []     # 貸出延長可かどうか
     div_all = top.find_all('div', class_='column info')
     for div in div_all :
         p_all = div.find_all("p")
@@ -113,7 +110,19 @@ def analize_rental(html) :
         p = p.replace('\n','').replace('\xa0',' ')
         attr_list.append(p)
 
-    for title,attr,info in zip(title_list,attr_list,info_list) :
+    #  貸出延長可かどうかは 貸出延長ボタンがあるかで判断する  
+    #  予約数0でも貸出延長可の場合もあるので予約数では判断できない
+    div_info = top.find_all('div', class_=['info'])
+    #  上記では 'column info' にもヒットするのでこれを取り除く
+    filtered_results = [result for result in div_info if result.get("class") == ["info"]]
+    for div in filtered_results :
+        extension = div.find("a", class_='btn-02')  # 貸出延長ボタン
+        flg = True
+        if extension == None :
+            flg = False
+        extension_list.append(flg)
+
+    for title,attr,info,ext in zip(title_list,attr_list,info_list,extension_list) :
         rental_item = {}
         rental_item['title'] = title
 
@@ -123,6 +132,7 @@ def analize_rental(html) :
         rental_item['resv_cnt'] = int(m.group(3))
         rental_item['extension'] = int(m.group(4))
         rental_item['info'] = info
+        rental_item['enable_extension'] = ext
         user_rental_list.append(rental_item)
 
 def output_rental_list() :
@@ -143,8 +153,11 @@ def output_rental_list() :
             resv = "<span class=blue>なし</span>"
         else :
             resv = r['resv_cnt']
+        flg = ""
+        if r['enable_extension']  :
+            flg = "<span class=blue>可</span>"
         out.write(f"<tr><td align=right>{i}</td><td>{r['title']} {r['info']}</td>"
-                  f"<td>{l_date}</td><td align=right>{resv}</td><td>{ext}</td></tr>")
+                  f"<td>{l_date}</td><td align=right>{resv}</td><td align=right>{flg}</td><td>{ext}</td></tr>")
 
     num_output = num_output + 1
 
