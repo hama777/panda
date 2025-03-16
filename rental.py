@@ -13,8 +13,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome import service as fs
 from datetime import timedelta
 
-# 25/03/14 v1.02 貸出延長可否を貸出延長ボタンで判断する
-version = "1.02"
+# 25/03/16 v1.03 v134よりログイン処理を2回実行しないと最初のユーザデータがとれない
+version = "1.03"
 appdir = os.path.dirname(os.path.abspath(__file__))
 userfile = appdir + "./user.txt"
 conffile = appdir + "./panda.conf"
@@ -72,6 +72,7 @@ def proc_rental_list():
         return
     for u in userinfo :
         com.login(u['id'],u['pass'],driver)
+        com.login(u['id'],u['pass'],driver)   # v134よりなぜか2回実行しないと最初のユーザデータがとれない
         user_rental_list = []
         access_rental()
         rental_list.append(user_rental_list)
