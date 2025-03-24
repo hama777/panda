@@ -12,7 +12,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome import service as fs
 from selenium.webdriver.support.select import Select
 
-version = "1.07"    # 24/09/20
+# 25/03/24 v1.09 search_by_title_repetition()のリトライ処理変更
+version = "1.09"
 appdir = os.path.dirname(os.path.abspath(__file__))
 conffile = appdir + "./panda.conf"
 wishlistfile = appdir + "./wishlist.htm"
@@ -168,11 +169,11 @@ def check_resv_title_list(title) :
     return False 
 
 def search_by_title_repetition(t) :
-    for _ in range(4)  :    # エラー時のリトライは2回
+    for _ in range(2)  :    # エラー時のリトライは1回   0 1
         ret = com.search_by_title(t,driver)
         if ret[0] != -1 :   # st 
             return ret  
-        time.sleep(30)     # エラーなら30秒まってリトライ
+        time.sleep(5)     # エラーなら5秒まってリトライ
     else :
         print(f"ERROR search access {t}")
         return -1,0,0,0
