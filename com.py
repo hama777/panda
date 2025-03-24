@@ -9,7 +9,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome import service as fs
 from datetime import timedelta
 
-#  23/05/03
+# 25/03/24 search_by_title() のタイミング修正
 
 SEARCH_NON  = 0    # 見つからない   
 SEARCH_NG  = 1     # 貸出中
@@ -83,9 +83,13 @@ def search_by_title(title,driver) :
     driver.get(url)
     word = driver.find_element(By.NAME,"txt_word1")
     word.send_keys(title)
+    time.sleep(1)    #  すぐにクリックすると検索結果が得られない場合が多いのでsleep
     btn = driver.find_element(By.NAME,"submit_btn_searchDetailSelAr")
     btn.click()
     html = driver.page_source
+    #f = open("test_with.htm" , 'w', encoding='utf-8')
+    #f.write(html)
+    #f.close()
     ret = analize_info(html)
     return ret
 
