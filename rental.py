@@ -13,8 +13,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome import service as fs
 from datetime import timedelta
 
-# 25/03/16 v1.03 v134よりログイン処理を2回実行しないと最初のユーザデータがとれない
-version = "1.03"
+# 25/06/09 v1.04 目的ページにアクセスできない場合はあるのでwaitを入れた
+version = "1.04"
 appdir = os.path.dirname(os.path.abspath(__file__))
 userfile = appdir + "./user.txt"
 conffile = appdir + "./panda.conf"
@@ -72,7 +72,6 @@ def proc_rental_list():
         return
     for u in userinfo :
         com.login(u['id'],u['pass'],driver)
-        com.login(u['id'],u['pass'],driver)   # v134よりなぜか2回実行しないと最初のユーザデータがとれない
         user_rental_list = []
         access_rental()
         rental_list.append(user_rental_list)
@@ -83,6 +82,7 @@ def proc_rental_list():
 def access_rental() :
 
     rental_url = "https://www.lib.city.kobe.jp/winj/opac/lend-list.do"
+    time.sleep(2)           #  ページが取得できない場合があるのでタイミングを入れる
     driver.get(rental_url)
     html = driver.page_source
     analize_rental(html)
