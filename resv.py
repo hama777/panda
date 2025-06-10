@@ -16,8 +16,8 @@ from selenium.webdriver.chrome import service as fs
 from datetime import timedelta
 from ftplib import FTP_TLS
 
-# 25/03/16 v1.24 v134よりログイン処理を2回実行しないと最初のユーザデータがとれない
-version = "1.24"     
+# 25/06/10 v1.25 目的ページにアクセスできない場合はあるのでwaitを入れた
+version = "1.25"     
 appdir = os.path.dirname(os.path.abspath(__file__))
 userfile = appdir + "./user.txt"
 conffile = appdir + "./panda.conf"
@@ -119,7 +119,7 @@ def proc_reserve_list():
 
     for u in userinfo :
         com.login(u['id'],u['pass'],driver)
-        com.login(u['id'],u['pass'],driver)  # v134よりなぜか2回実行しないと最初のユーザデータがとれない
+        time.sleep(2)           #  ページが取得できない場合があるのでタイミングを入れる
         user_resv_list = []
         user_book_info_list = []
         access_reserve()
