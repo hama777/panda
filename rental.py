@@ -13,8 +13,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome import service as fs
 from datetime import timedelta
 
-# 25/06/09 v1.04 目的ページにアクセスできない場合はあるのでwaitを入れた
-version = "1.04"
+# 26/02/09 v1.05 ユーザ数が1の場合にエラーになるのを修正
+version = "1.05"
 appdir = os.path.dirname(os.path.abspath(__file__))
 userfile = appdir + "./user.txt"
 conffile = appdir + "./panda.conf"
@@ -139,6 +139,9 @@ def analize_rental(html) :
 def output_rental_list() :
     global num_output   
 
+    num_user = len(userinfo)
+    if num_output >= num_user :
+        return
     i = 0 
     r_list = rental_list[num_output]
     for r in r_list :
