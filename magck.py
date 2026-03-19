@@ -14,8 +14,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome import service as fs
 from selenium.webdriver.support.select import Select
 
-# 25/08/01 LINE通知廃止のためメールに変更
-version = "1.04"
+# 26/03/20 検索でタイミングのsleepを入れた
+version = "1.05"
 
 appdir = os.path.dirname(os.path.abspath(__file__))
 conffile = appdir + "./panda.conf"
@@ -139,6 +139,7 @@ def search_by_magagine(title) :
     word.send_keys(title)
     catph = driver.find_element(By.ID,"chk_catph0")   #  図書 のチェックボックスをはずす
     catph.click() 
+    time.sleep(1)  # すぐにクリックすると検索結果が得られない場合が多いのでsleep
     btn = driver.find_element(By.NAME,"submit_btn_searchDetailSelAr")
     btn.click()
     html = driver.page_source
