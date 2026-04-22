@@ -4,15 +4,17 @@ import sys
 import datetime
 import subprocess
 import argparse
+import pandas as pd
 import com
-from bs4 import BeautifulSoup
-from selenium.webdriver.chrome.options import Options
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome import service as fs
-from selenium.webdriver.support.select import Select
+#from bs4 import BeautifulSoup
+#from selenium.webdriver.chrome.options import Options
+#from selenium import webdriver
+#from selenium.webdriver.common.by import By
+#from selenium.webdriver.chrome import service as fs
+#from selenium.webdriver.support.select import Select
 
-version = "1.11"    # 24/09/19
+# 26/04/22 v1.12 図書データをExcelから読むようにした
+version = "1.12"    # 24/09/19
 appdir = os.path.dirname(os.path.abspath(__file__))
 conffile = appdir + "./panda.conf"
 templ_name = appdir + "./searchtmpl.htm"
@@ -29,12 +31,12 @@ state_count = {}
 state_count[SEARCH_NON] = 0 
 state_count[SEARCH_OK] = 0 
 
-conn_temp = (
-    r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-    r'DBQ=xxxxxx;'
-    )
+# conn_temp = (
+#     r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
+#     r'DBQ=xxxxxx;'
+#     )
+# dbdata = []    # DBから読み込んだデータ  書名、登録年月、備考(書誌番号)
 dbfile = ""
-dbdata = []    # DBから読み込んだデータ  書名、登録年月、備考(書誌番号)
 
 flg_display = False
 
@@ -54,10 +56,11 @@ def main_proc() :
         return
 
     driver = com.init_selenium(browser,selenium)
+    read_data()
     init_search()
     check_exsist()
     parse_template(templ_name,result_file)
-    result = subprocess.run((browser, result_file))
+    _ = subprocess.run((browser, result_file))
 
 def argument() :
     global  flg_display
@@ -71,8 +74,51 @@ def init_search() :
     url = "https://www.lib.city.kobe.jp/winj/opac/search-detail.do"
     driver.get(url)
 
+#   Excel からデータ取得
+def read_data() :
+    global df_book
+    dbfile = "図書.xlsx"
+    df_book = pd.read_excel(dbfile,sheet_name ='main',header = 0, usecols="A:F",   # header = 0  excel 1行目がタイトル
+                       names=["yymm", "title","author","publisher","own","dcode",],dtype={"dcode": str}) 
+
+    df_book["lib"] = (df_book["own"] == "Z").astype(int)
+    print(df_book)
+
 #   DBの本が図書館にあるかチェックする
 def check_exsist() :
+
+    log = open(log_file,'w' ,  encoding='utf-8')
+    for _,row in df_book.iterrows() :
+        t = row['title']
+        own = row['own']
+        if own == "Z" :
+            continue
+        print(t)
+        ret = com.search_by_title(t,driver)
+        st = ret[0]
+        if st == -1 :
+            print("ERROR search access")
+            log.write(f'ERROR search access {t}\n')
+            continue
+            #sys.exit(1)
+        count = ret[1]
+        resv = ret[2]
+        if st == SEARCH_NON :     # 存在しなければ何もしない
+            state_count[SEARCH_NON] +=  1
+            continue 
+        result_item = {}
+        result_item['title'] = t 
+        result_item['state'] = st
+        if st == SEARCH_NG or st == SEARCH_OK :
+            result_item['count'] = count
+            result_item['resv'] = resv
+            state_count[SEARCH_OK] +=  1   # 貸出中か貸出OKかは区別しない
+
+        result_list.append(result_item)
+    log.close()
+
+#   DBの本が図書館にあるかチェックする
+def check_exsist_old() :
     global dbdata
     sql = "SELECT * FROM [main] WHERE [図] is null"
     conn_str = conn_temp.replace("xxxxxx",dbfile)
