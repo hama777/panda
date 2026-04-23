@@ -4,16 +4,17 @@ import sys
 import datetime
 import subprocess
 import argparse
+import pandas as pd
 import com
 from bs4 import BeautifulSoup
-from selenium.webdriver.chrome.options import Options
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome import service as fs
-from selenium.webdriver.support.select import Select
+# from selenium.webdriver.chrome.options import Options
+# from selenium import webdriver
+# from selenium.webdriver.common.by import By
+# from selenium.webdriver.chrome import service as fs
+# from selenium.webdriver.support.select import Select
 
-# 25/03/24 v1.09 search_by_title_repetition()のリトライ処理変更
-version = "1.09"
+# 26/04/23 v1.10 図書データをExcelから読むようにした
+version = "1.10"
 appdir = os.path.dirname(os.path.abspath(__file__))
 conffile = appdir + "./panda.conf"
 wishlistfile = appdir + "./wishlist.htm"
@@ -53,6 +54,7 @@ def main_proc() :
     browser = config['browser']
     selenium = config['selenium']
     dbfile = config['dbfile']
+    dbfile = "図書.xlsx"
 
     driver = com.init_selenium(browser,selenium)
     init_search()
@@ -80,12 +82,21 @@ def wish_list():
         return
 
     read_cachefile()
-    sql = "SELECT * FROM [main] WHERE [図] = 'Z' order by [登録日];"
-    conn_str = conn_temp.replace("xxxxxx",dbfile)
-    dbdata = com.read_database(conn_str,sql)
+    # sql = "SELECT * FROM [main] WHERE [図] = 'Z' order by [登録日];"
+    # conn_str = conn_temp.replace("xxxxxx",dbfile)
+    # dbdata = com.read_database(conn_str,sql)
+    read_data()
     read_info_file()
     parse_template(wish_templatefile,wishlistfile)
     result = subprocess.run((browser, wishlistfile))
+
+def read_data() :
+    global df_book
+    dbfile = "図書.xlsx"
+    df_book = pd.read_excel(dbfile,sheet_name ='main',header = 0, usecols="A:F",   # header = 0  excel 1行目がタイトル
+                       names=["yymm", "title","author","publisher","own","dcode",],dtype={"dcode": str}) 
+
+    df_book["lib"] = (df_book["own"] == "Z").astype(int)
 
 def output_wish_list() :
     biburl = "https://www.lib.city.kobe.jp/winj/opac/switch-detail.do?lang=ja&bibid="
@@ -94,16 +105,24 @@ def output_wish_list() :
         os.remove(cachefile_save)  
     os.rename(cachefile, cachefile_save) 
     bibout = open(cachefile,'w',  encoding='utf-8')
-    for row in dbdata :
+    for _,row in df_book.iterrows() :
+    #for row in dbdata :
+        # dt = row.split("\t")
+        # title,add,bib = dt  
+        own = row['own']
+        if own != "Z" :
+            continue
         i = i + 1 
-        dt = row.split("\t")
-        title,add,bib = dt  
+        title = row['title']
+        add = row['yymm']
+        bib = row['dcode']
+
         title = title.replace('\u203c',' ')
         title = title.replace('\u5653',' ')
 
         adddate = 0 
         st = -1
-        if dt[1] != None :
+        if add != None :
             adddate = int(add)
         if adddate < startyymm :     # 指定年月より前はキャッシュから情報を得る
             ret = search_cachelist(title)
@@ -116,9 +135,10 @@ def output_wish_list() :
                 _,_,bibid,count,resv = ret.split("\t")   # title,adddate,bibid,count,resv
                 prev_resv = int(resv)
         else :
-            if bib != "None" :       # DBに書誌番号が入っている場合は書誌番号で検索する
+            if not pd.isna(bib):        # DBに書誌番号が入っている場合は書誌番号で検索する
                 ret = com.search_by_bibid(bib,driver)
             else :
+                print(f"title = #{title}#,{bib}")
                 ret = search_by_title_repetition(title)
             st,count,resv,bibid = ret
             prevdata = search_cachelist(title)
@@ -155,7 +175,7 @@ def output_wish_list() :
 
 def read_info_file() :
     global resv_title_list
-    for u in range(2)  :  # ユーザ数 2 に決めうち
+    for u in range(1)  :  # ユーザ数 1 に決めうち
         f = open(f'{infofile}{u}.txt','r',  encoding='utf-8')
         _ = f.readline()
         for line in f:
