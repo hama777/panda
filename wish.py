@@ -6,15 +6,10 @@ import subprocess
 import argparse
 import pandas as pd
 import com
-from bs4 import BeautifulSoup
-# from selenium.webdriver.chrome.options import Options
-# from selenium import webdriver
-# from selenium.webdriver.common.by import By
-# from selenium.webdriver.chrome import service as fs
-# from selenium.webdriver.support.select import Select
+#from bs4 import BeautifulSoup
 
-# 26/04/23 v1.10 図書データをExcelから読むようにした
-version = "1.10"
+# 26/04/25 v1.11 図書データをExcelから読むようにした
+version = "1.11"
 appdir = os.path.dirname(os.path.abspath(__file__))
 conffile = appdir + "./panda.conf"
 wishlistfile = appdir + "./wishlist.htm"
@@ -30,12 +25,12 @@ SEARCH_OK  = 2     # 貸出可
 SEARCH_DUP  = 3    # 複数ヒット
 SEARCH_MANY  = 4   # ヒット件数多すぎ
 
-conn_temp = (
-    r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-    r'DBQ=xxxxxx;'
-    )
+# conn_temp = (
+#     r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
+#     r'DBQ=xxxxxx;'
+#     )
 dbfile = ""
-dbdata = []    # DBから読み込んだデータ  書名、登録年月、備考(書誌番号)
+#dbdata = []    # DBから読み込んだデータ  書名、登録年月、備考(書誌番号)
 cachelist = []  # 過去の検索した情報   title adddate bibid count resv
 state_count = {}
 state_count[SEARCH_OK] = 0 
@@ -54,7 +49,6 @@ def main_proc() :
     browser = config['browser']
     selenium = config['selenium']
     dbfile = config['dbfile']
-    dbfile = "図書.xlsx"
 
     driver = com.init_selenium(browser,selenium)
     init_search()
@@ -76,7 +70,6 @@ def init_search() :
     driver.get(url)
 
 def wish_list():
-    global dbdata
     if flg_display :
         result = subprocess.run((browser, wishlistfile))
         return
@@ -88,11 +81,10 @@ def wish_list():
     read_data()
     read_info_file()
     parse_template(wish_templatefile,wishlistfile)
-    result = subprocess.run((browser, wishlistfile))
+    _ = subprocess.run((browser, wishlistfile))
 
 def read_data() :
     global df_book
-    dbfile = "図書.xlsx"
     df_book = pd.read_excel(dbfile,sheet_name ='main',header = 0, usecols="A:F",   # header = 0  excel 1行目がタイトル
                        names=["yymm", "title","author","publisher","own","dcode",],dtype={"dcode": str}) 
 
@@ -106,9 +98,6 @@ def output_wish_list() :
     os.rename(cachefile, cachefile_save) 
     bibout = open(cachefile,'w',  encoding='utf-8')
     for _,row in df_book.iterrows() :
-    #for row in dbdata :
-        # dt = row.split("\t")
-        # title,add,bib = dt  
         own = row['own']
         if own != "Z" :
             continue
@@ -138,7 +127,6 @@ def output_wish_list() :
             if not pd.isna(bib):        # DBに書誌番号が入っている場合は書誌番号で検索する
                 ret = com.search_by_bibid(bib,driver)
             else :
-                print(f"title = #{title}#,{bib}")
                 ret = search_by_title_repetition(title)
             st,count,resv,bibid = ret
             prevdata = search_cachelist(title)
